@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:ProjectTitan}",
+            "name": "Debug ProjectTitan",
+            "program": "${workspaceFolder:ProjectTitan}/.build/debug/ProjectTitan",
+            "preLaunchTask": "swift: Build Debug ProjectTitan"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:ProjectTitan}",
+            "name": "Release ProjectTitan",
+            "program": "${workspaceFolder:ProjectTitan}/.build/release/ProjectTitan",
+            "preLaunchTask": "swift: Build Release ProjectTitan"
+        }
+    ]
+}
