@@ -2,91 +2,63 @@ import Foundation
 import Tracker
 
 public class ViewWorkoutsPage: Page {
-    private var workoutsByDate: [Date: [Workout]]
+    private let viewModel: ViewWorkoutsViewModel
+    private let onAddWorkout: () -> PageAction
 
-    public init(workoutDict: [Date: [Workout]]) {
-        self.workoutsByDate = workoutDict
+    init(viewModel: ViewWorkoutsViewModel, onAddWorkout: @escaping () -> PageAction) {
+        self.viewModel = viewModel
+        self.onAddWorkout = onAddWorkout
     }
 
     public func render() {
+        let workouts = viewModel.getWorkoutsGroupedByDate()
         print(
         """
             +-------------------------+
             |     Project Titan 🦾    |
             +-------------------------+
+        """
+        )
 
-            === 06-22-2025 - Push Day ===
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
 
-            | Exercise          | Sets  | Reps  | Weight    |
-            |-----------------------------------------------|
-            | Bench Press       | 3     | 8     | 135       |
-            | Overhead Press    | 3     | 10    | 95        |
-            | Triceps Pushdown  | 3     | 12    | 45        |
+        for (date, workouts) in workouts.sorted(by: { $0.key < $1.key }) {
+            print("\n=== \(formatter.string(from: date)) ===")
 
-            === 06-23-2025 - Push Day ===
+            for workout in workouts {
+                print("Workout: \(workout.name)")
 
-            | Exercise          | Sets  | Reps  | Weight    |
-            |-----------------------------------------------|
-            | Bench Press       | 3     | 8     | 135       |
-            | Overhead Press    | 3     | 10    | 95        |
-            | Triceps Pushdown  | 3     | 12    | 45        |
+                print("| Exercise       | Sets  | Reps  | Weight    |")
+                print("|--------------------------------------------|")
+                for exercise in workout.exercises {
+                    //pad or truncate exercise.name to 17 characters
+                    let paddedName = String(exercise.name.prefix(17)).padding(toLength: 17, withPad: " ", startingAt: 0)
+                    print("| \(paddedName) | \(exercise.sets)   | \(exercise.reps)  | \(exercise.weight)    |")
+                }
+            }
+        }
 
-            === 06-24-2025 - Push Day ===
-
-            | Exercise          | Sets  | Reps  | Weight    |
-            |-----------------------------------------------|
-            | Bench Press       | 3     | 8     | 135       |
-            | Overhead Press    | 3     | 10    | 95        |
-            | Triceps Pushdown  | 3     | 12    | 45        |
-
-            === 06-25-2025 - Push Day ===
-
-            | Exercise          | Sets  | Reps  | Weight    |
-            |-----------------------------------------------|
-            | Bench Press       | 3     | 8     | 135       |
-            | Overhead Press    | 3     | 10    | 95        |
-            | Triceps Pushdown  | 3     | 12    | 45        |
-
-            === 06-26-2025 - Push Day ===
-
-            | Exercise          | Sets  | Reps  | Weight    |
-            |-----------------------------------------------|
-            | Bench Press       | 3     | 8     | 135       |
-            | Overhead Press    | 3     | 10    | 95        |
-            | Triceps Pushdown  | 3     | 12    | 45        |
-
-            [1] Add Exercise
-            [2] Edit Entry
+        print(
+            """
+            \n[1] Add Workout
+            [2] Edit Workout
             [3] Save Progress
             [4] Exit
-
-            >> 
-
-        """
+            >>
+            """
         )
     }
 
     public func handleInput(input: String) -> PageAction {
-        if let inputNumber = Int(input) {
-            print("the number was: \(inputNumber)")
-            switch inputNumber {
-                case 1:
-                    //Add exercise
-                    return .goToEditPage
-                case 2:
-                    //Edit entry
-                    return .goToEditPage
-                case 3:
-                    //Save progress
-                    return .stay
-                case 4:
-                    //exit of course
-                    return .exit
-                default:
-                    return .stay
-            }
-        } else {
-            print("invalid number")
+        switch input {
+        case "1": return onAddWorkout()
+        case "4": return .exit
+        case "3": 
+            viewModel.saveWorkoutsToFile()
+            return .stay
+        default:
+            print("invalid selection.")
             return .stay
         }
     }

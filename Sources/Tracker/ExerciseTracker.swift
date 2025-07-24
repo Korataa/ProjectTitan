@@ -4,7 +4,12 @@ public class ExerciseTracker {
     var workoutsByDate: [Date: [Workout]] = [:]
 
     public init() {
-
+        do {
+            try loadFromFile()
+        } catch {
+            print("Failed to load workouts: \(error)")
+            workoutsByDate = [:]
+        }
     }
 
     public func addWorkout(on date: Date, workout: Workout) {
@@ -21,39 +26,39 @@ public class ExerciseTracker {
         return workoutsByDate.mapValues { Array($0) }
     }
 
-    public func saveToFile(to url: URL) {
+    public func saveToFile() throws {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         encoder.dateEncodingStrategy = .iso8601
 
         let serializableDict = workoutsByDateToSerializable()
 
-        do {
-            let data = try encoder.encode(serializableDict)
-            try data.write(to: url)
-            print("Saved to \(url)")
-        } catch {
-            print("Error saving: \(error)")
-        }
+        let documentsURL = URL(fileURLWithPath: "C:/Users/lauri/Documents", isDirectory: true)
+        let fileURL = documentsURL.appendingPathComponent("workouts.json")
+    
+        let data = try encoder.encode(serializableDict)
+        try data.write(to: fileURL)
+
+        print("Saved to \(fileURL.path)")
     }
 
-    public func loadFromFile(from url: URL) {
+    public func loadFromFile() throws {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        do {
-            let data = try Data(contentsOf: url)
-            let decodedDict = try decoder.decode([String: [Workout]].self, from: data)
-            workoutsByDate = workoutsByDateFromSerializable(decodedDict)
-            print("Loaded from \(url)")
-        } catch {
-            print("Error loading: \(error)")
-        }
+        let documentsURL = URL(fileURLWithPath: "C:/Users/lauri/Documents", isDirectory: true)
+        let fileURL = documentsURL.appendingPathComponent("workouts.json")
+
+        let data = try Data(contentsOf: fileURL)
+        let decodedDict = try decoder.decode([String: [Workout]].self, from: data)
+        workoutsByDate = workoutsByDateFromSerializable(decodedDict)
+
+        print("Loaded from \(fileURL.path)")
     }
 
     private var iso8601Formatter: ISO8601DateFormatter {
         let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
+        formatter.formatOptions = [.withFullDate]   //only date, no time
         return formatter
     }
 

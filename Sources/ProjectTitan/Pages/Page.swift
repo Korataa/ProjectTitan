@@ -1,3 +1,6 @@
+import Foundation
+import Tracker
+
 public protocol Page {
     func render()
     func handleInput(input: String) -> PageAction
@@ -6,7 +9,6 @@ public protocol Page {
 
 public enum PageAction {
     case stay
-    case goToEditPage
-    case goToViewPage
+    case pop
     case exit
 }
